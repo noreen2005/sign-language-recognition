@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Recognition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script>
+        let model;
+        
+        async function loadModel() {
+            model = await tf.loadLayersModel('model.json');
+            console.log('Model loaded successfully!');
+        }
+
+        async function predict() {
+            const video = document.getElementById('webcam');
+            const predictions = await model.predict(tf.browser.fromPixels(video).expandDims(0)).data();
+            
+            const results = Array.from(predictions).map((prob, idx) => ({class: idx, probability: prob}));
+            console.log(results);
+            requestAnimationFrame(predict);
+        }
+
+        async function init() {
+            const video = document.getElementById('webcam');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+
+            await loadModel();
+            predict();
+        }
+
+        window.onload = init;
+    </script>
+</head>
+<body>
+    <h1>Real-time Sign Language Recognition</h1>
+    <video id="webcam" autoplay></video>
+</body>
+</html>
